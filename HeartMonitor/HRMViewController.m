@@ -16,10 +16,10 @@
 @implementation HRMViewController
 @synthesize bluetoothManager;
 
-static NSString * const hrsServiceUUIDString = @"0000180D-0000-1000-8000-00805F9B34FB";
-//static NSString * const POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID = @"00002A37-0000-1000-8000-00805F9B34FB";
-static NSString * const hrsSensorLocationCharacteristicUUIDString = @"00002A38-0000-1000-8000-00805F9B34FB";
-CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID];
+//static NSString * const hrsServiceUUIDString = @"0000180D-0000-1000-8000-00805F9B34FB";
+////static NSString * const POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID = @"00002A37-0000-1000-8000-00805F9B34FB";
+//static NSString * const hrsSensorLocationCharacteristicUUIDString = @"00002A38-0000-1000-8000-00805F9B34FB";
+//CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID];
 
 - (void)viewDidLoad
 {
@@ -60,6 +60,8 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
 	}
 	else if ([central state] == CBCentralManagerStatePoweredOn) {
 		NSLog(@"CoreBluetooth BLE hardware is powered on and ready");
+        //[central scanForPeripheralsWithServices:POLARH7_HRM_HEART_RATE_SERVICE_UUID options:nil];
+        [self scan];
 	}
 	else if ([central state] == CBCentralManagerStateUnauthorized) {
 		NSLog(@"CoreBluetooth BLE state is unauthorized");
@@ -70,7 +72,7 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
 	else if ([central state] == CBCentralManagerStateUnsupported) {
 		NSLog(@"CoreBluetooth BLE hardware is unsupported on this platform");
 	}
-    [self scan];
+   //[self scan];
 }
 //- (void)centralManagerDidUpdateState:(CBCentralManager *)central
 //{
@@ -95,6 +97,8 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
                                                 options:@{ CBCentralManagerScanOptionAllowDuplicatesKey : @YES }];
     
     NSLog(@"Scanning started");
+    //[self.centralManager didDiscoverPeripheral];
+    
 }
 
 
@@ -115,24 +119,25 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
 //}
 
 // CBCentralManagerDelegate - This is called with the CBPeripheral class as its main input parameter. This contains most of the information there is to know about a BLE peripheral.
-//- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
-//{
-//	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
-//	if (![localName isEqual:@""]) {
-//		// We found the Heart Rate Monitor
-//		[self.centralManager stopScan];
-//		self.polarH7HRMPeripheral = peripheral;
-//		peripheral.delegate = self;
-//		[self.centralManager connectPeripheral:peripheral options:nil];
-//	}
-//}
+- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
+{
+	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
+	//if (![localName isEqual:@""]) {
+		// We found the Heart Rate Monitor
+		[self.centralManager stopScan];
+        NSLog(@"Stopped scan");
+		self.polarH7HRMPeripheral = peripheral;
+		peripheral.delegate = self;
+		[self.centralManager connectPeripheral:peripheral options:nil];
+	//}
+}
 
 
 /** This callback comes whenever a peripheral that is advertising the TRANSFER_SERVICE_UUID is discovered.
  *  We check the RSSI, to make sure it's close enough that we're interested in it, and if it is,
  *  we start the connection process
  */
-- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
+- (void)centralManager:(CBCentralManager *)central  :(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
 {
     // Reject any where the value is above reasonable range
     if (RSSI.integerValue > -15) {
@@ -189,56 +194,16 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
 }
 
 
-// Invoked when you discover the characteristics of a specified service.
-//- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
-//{
-//	if ([service.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]])  {  // 1
-//		for (CBCharacteristic *aChar in service.characteristics)
-//		{
-//			// Request heart rate notifications
-//			if ([aChar.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID]]) { // 2
-//				[self.polarH7HRMPeripheral setNotifyValue:YES forCharacteristic:aChar];
-//			}
-//			// Request body sensor location
-//			else if ([aChar.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_BODY_LOCATION_UUID]]) { // 3
-//				[self.polarH7HRMPeripheral readValueForCharacteristic:aChar];
-//			}
-////			else if ([aChar.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_ENABLE_SERVICE_UUID]]) { // 4
-////				// Read the value of the heart rate sensor
-////				UInt8 value = 0x01;
-////				NSData *data = [NSData dataWithBytes:&value length:sizeof(value)];
-////				[peripheral writeValue:data forCharacteristic:aChar type:CBCharacteristicWriteWithResponse];
-////			}
-//		}
-//	}
-//	// Retrieve Device Information Services for the Manufacturer Name
-//	if ([service.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_DEVICE_INFO_SERVICE_UUID]])  { // 5
-//        for (CBCharacteristic *aChar in service.characteristics)
-//        {
-//            if ([aChar.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_MANUFACTURER_NAME_UUID]]) {
-//                [self.polarH7HRMPeripheral readValueForCharacteristic:aChar];
-//                NSLog(@"Found a Device Manufacturer Name Characteristic");
-//            }
-//        }
-//	}
-//}
+
 
 // Invoked when you retrieve a specified characteristic's value, or when the peripheral device notifies your app that the characteristic's value has changed.
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
 	// Updated value for heart rate measurement received
-	if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID]]) { // 1
+	if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]]) { // 1
 		// Get the Heart Rate Monitor BPM
 		[self getHeartBPMData:characteristic error:error];
 	}
-	// Retrieve the characteristic value for manufacturer name received
-    if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_MANUFACTURER_NAME_UUID]]) {  // 2
-		[self getManufacturerName:characteristic];
-    }
-	// Retrieve the characteristic value for the body sensor location received
-	else if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_BODY_LOCATION_UUID]]) {  // 3
-		[self getBodyLocation:characteristic];
-    }
 	
 	// Add our constructed device information to our UITextView
 	self.deviceInfo.text = [NSString stringWithFormat:@"%@\n%@\n%@\n", self.connected, self.bodyData, self.manufacturer];  // 4
@@ -293,12 +258,7 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
 	return;
 }
 
-// instance method to stop the device from rotating - only support the Portrait orientation
-- (NSUInteger) supportedInterfaceOrientations {
-    // Return a bitmask of supported orientations. If you need more,
-    // use bitwise or (see the commented return).
-    return UIInterfaceOrientationMaskPortrait;
-}
+
 
 // instance method to simulate our pulsating Heart Beat
 - (void) doHeartBeat
@@ -343,18 +303,16 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
 {
     if (!error) {
         for (CBService *hrService in peripheral.services) {
-            if ([hrService.UUID isEqual:POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID])
-            {
+           // if ([hrService.UUID isEqual:POLARH7_HRM_HEART_RATE_SERVICE_UUID])
+            //{
                 NSLog(@"HR service found");
                 NSLog(@"Vetri: check1");
                 
                 [peripheral discoverCharacteristics:nil forService:hrService];
-            }
-//            else if ([hrService.UUID isEqual:Battery_Service_UUID])
-//            {
-//                NSLog(@"Battery service found");
-//                [peripheral discoverCharacteristics:nil forService:hrService];
-//            }
+            //}
+            //else{
+              //  NSLog(@"Not in the If Loop");
+            //}
             
         }
     } else {
@@ -364,132 +322,23 @@ CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM
 
 -(void) peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
 {
-    //HR_Measurement_Characteristic_UUID = 2A37;
-
     if (!error) {
-        if ([service.UUID isEqual:POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID]) {
+        if ([service.UUID isEqual:POLARH7_HRM_HEART_RATE_SERVICE_UUID]) {
             for (CBCharacteristic *characteristic in service.characteristics)
             {
-                if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) {
+                //if ([characteristic.UUID isEqual:POLARH7_HRM_HEART_RATE_SERVICE_UUID]) {
                     NSLog(@"HR Measurement characteritsic found");
                     [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
-                }
-//                else if ([characteristic.UUID isEqual:HR_Location_Characteristic_UUID]) {
-//                    NSLog(@"Body Sensor Location characteristic found");
-//                    [peripheral readValueForCharacteristic:characteristic];
-//                }
+                //}
+           
             }
         }
-//        else if ([service.UUID isEqual:Battery_Service_UUID]) {
-//            for (CBCharacteristic *characteristic in service.characteristics)
-//            {
-//                if ([characteristic.UUID isEqual:Battery_Level_Characteristic_UUID]) {
-//                    NSLog(@"Battery Level characteristic found");
-//                    [hrPeripheral readValueForCharacteristic:characteristic];
-//                }
-//            }
-//        }
+
     } else {
         NSLog(@"Error occurred while discovering characteristic: %@",[error localizedDescription]);
     }
 }
 
-//-(void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
-//{
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        if (!error) {
-//            if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) {
-//                int value = [self decodeHRValue:characteristic.value];
-//                [self addHRValueToGraph: value];
-//                hrValue.text = [NSString stringWithFormat:@"%d", value];
-//            }
-//            else if ([characteristic.UUID isEqual:HR_Location_Characteristic_UUID]) {
-//                hrLocation.text = [self decodeHRLocation:characteristic.value];
-//            }
-//            else if ([characteristic.UUID isEqual:Battery_Level_Characteristic_UUID]) {
-//                const uint8_t *array = [characteristic.value bytes];
-//                uint8_t batteryLevel = array[0];
-//                NSString* text = [[NSString alloc] initWithFormat:@"%d%%", batteryLevel];
-//                [battery setTitle:text forState:UIControlStateDisabled];
-//                
-//                if (battery.tag == 0)
-//                {
-//                    // If battery level notifications are available, enable them
-//                    if (([characteristic properties] & CBCharacteristicPropertyNotify) > 0)
-//                    {
-//                        battery.tag = 1; // mark that we have enabled notifications
-//                        
-//                        // Enable notification on data characteristic
-//                        [peripheral setNotifyValue:YES forCharacteristic:characteristic];
-//                    }
-//                }
-//            }
-//        }
-//        else {
-//            NSLog(@"Error occurred while updating characteristic value: %@",[error localizedDescription]);
-//        }
-//    });
-//}
 
--(int) decodeHRValue:(NSData *)data
-{
-    const uint8_t *value = [data bytes];
-    int bpmValue = 0;
-    if ((value[0] & 0x01) == 0) {
-        bpmValue = value[1];
-    }
-    else {
-        bpmValue = CFSwapInt16LittleToHost(*(uint16_t *)(&value[1]));
-    }
-    return bpmValue;
-}
-
--(NSString *) decodeHRLocation:(NSData *)data
-{
-    const uint8_t *location = [data bytes];
-    NSString *hrmLocation;
-    switch (location[0]) {
-        case 0:
-            hrmLocation = @"Other";
-            break;
-        case 1:
-            hrmLocation = @"Chest";
-            break;
-        case 2:
-            hrmLocation = @"Wrist";
-            break;
-        case 3:
-            hrmLocation = @"Finger";
-            break;
-        case 4:
-            hrmLocation = @"Hand";
-            break;
-        case 5:
-            hrmLocation = @"Ear Lobe";
-            break;
-        case 6:
-            hrmLocation = @"Foot";
-            break;
-        default:
-            hrmLocation = @"Invalid";
-            break;
-    }
-    return hrmLocation;
-}
-
-- (void) clearUI
-{
-//    deviceName.text = @"DEFAULT HRM";
-//    [battery setTitle:@"n/a" forState:UIControlStateDisabled];
-//    battery.tag = 0;
-//    hrLocation.text = @"n/a";
-//    hrValue.text = @"-";
-//    
-//    // Clear and reset the graph
-//    [hrValues removeAllObjects];
-//    [xValues removeAllObjects];
-//    [self resetPlotRange];
-//    [self.graph reloadData];
-}
 
 @end
