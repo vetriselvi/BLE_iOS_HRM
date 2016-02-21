@@ -218,9 +218,30 @@ CBUUID *HR_Measurement_Characteristic_UUID;
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
 	// Updated value for heart rate measurement received
-	if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]]) { // 1
+	if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) { // 1
 		// Get the Heart Rate Monitor BPM
-		[self getHeartBPMData:characteristic error:error];
+		//[self getHeartBPMData:characteristic error:error];
+        // Get the Heart Rate Monitor BPM
+        NSData *data = [characteristic value];      // 1
+        const uint8_t *reportData = [data bytes];
+        uint16_t bpm = 0;
+        
+        if ((reportData[0] & 0x01) == 0) {          // 2
+            // Retrieve the BPM value for the Heart Rate Monitor
+            bpm = reportData[1];
+        }
+        else {
+            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
+        }
+        // Display the heart rate value to the UI if no error occurred
+        if( (characteristic.value)  || !error ) {   // 4
+            self.heartRate = bpm;
+            self.heartRateBPM.text = [NSString stringWithFormat:@"%i bpm", bpm];
+            self.heartRateBPM.font = [UIFont fontWithName:@"Futura-CondensedMedium" size:28];
+            [self doHeartBeat];
+            self.pulseTimer = [NSTimer scheduledTimerWithTimeInterval:(60. / self.heartRate) target:self selector:@selector(doHeartBeat) userInfo:nil repeats:NO];
+        }
+        return;
 	}
 	
 	// Add our constructed device information to our UITextView
@@ -320,6 +341,8 @@ CBUUID *HR_Measurement_Characteristic_UUID;
 -(void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
     if (!error) {
+        //Type-Casting NSArray to CBService doesn't work!
+        //CBService *hrService = peripheral.services;
         for (CBService *hrService in peripheral.services) {
             //Remember - Get UUID by implementing UUIDWithString, otherwise it will fetch the raw string
             if ([hrService.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]])
@@ -342,7 +365,7 @@ CBUUID *HR_Measurement_Characteristic_UUID;
 -(void) peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
 {
     if (!error) {
-        if ([service.UUID isEqual:POLARH7_HRM_HEART_RATE_SERVICE_UUID]) {
+        if ([service.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]]) {
             for (CBCharacteristic *characteristic in service.characteristics)
             {
                 if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) {
