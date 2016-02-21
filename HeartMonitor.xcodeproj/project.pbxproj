@@ -36,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D17E90861C7A79B000837171 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 		E94AE6571825D8D0007AF84D /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		E94AE6591825E0A4007AF84D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		E94AE65B1825E0AB007AF84D /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
@@ -121,6 +122,7 @@
 		E98E8E5D1815331A00614D8E /* HeartMonitor */ = {
 			isa = PBXGroup;
 			children = (
+				D17E90861C7A79B000837171 /* Constants.h */,
 				E98E8E661815331A00614D8E /* HRMAppDelegate.h */,
 				E98E8E671815331A00614D8E /* HRMAppDelegate.m */,
 				E98E8E691815331A00614D8E /* Main.storyboard */,

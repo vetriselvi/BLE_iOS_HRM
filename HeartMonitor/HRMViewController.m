@@ -7,8 +7,11 @@
 //
 
 #import "HRMViewController.h"
+#import "Constants.h"
 
-@interface HRMViewController ()
+@interface HRMViewController () {
+CBUUID *HR_Measurement_Characteristic_UUID;
+}
 @property (strong, nonatomic) CBPeripheral          *discoveredPeripheral;
 
 @end
@@ -20,6 +23,21 @@
 ////static NSString * const POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID = @"00002A37-0000-1000-8000-00805F9B34FB";
 //static NSString * const hrsSensorLocationCharacteristicUUIDString = @"00002A38-0000-1000-8000-00805F9B34FB";
 //CBUUID *HR_Measurement_Characteristic_UUID;// [CBUUID UUIDWithString:POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID];
+
+-(id)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        // Custom initialization
+//        HR_Service_UUID = [CBUUID UUIDWithString:hrsServiceUUIDString];
+//        NSLog(@"HR_Service_UUID is Vetri: check 2: %@",HR_Service_UUID);
+        HR_Measurement_Characteristic_UUID = [CBUUID UUIDWithString:hrsHeartRateCharacteristicUUIDString];
+        //HR_Location_Characteristic_UUID = [CBUUID UUIDWithString:hrsSensorLocationCharacteristicUUIDString];
+        //Battery_Service_UUID = [CBUUID UUIDWithString:batteryServiceUUIDString];
+        //Battery_Level_Characteristic_UUID = [CBUUID UUIDWithString:batteryLevelCharacteristicUUIDString];
+    }
+    return self;
+}
 
 - (void)viewDidLoad
 {
@@ -303,16 +321,17 @@
 {
     if (!error) {
         for (CBService *hrService in peripheral.services) {
-           // if ([hrService.UUID isEqual:POLARH7_HRM_HEART_RATE_SERVICE_UUID])
-            //{
+            //Remember - Get UUID by implementing UUIDWithString, otherwise it will fetch the raw string
+            if ([hrService.UUID isEqual:[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]])
+            {
                 NSLog(@"HR service found");
                 NSLog(@"Vetri: check1");
                 
                 [peripheral discoverCharacteristics:nil forService:hrService];
-            //}
-            //else{
-              //  NSLog(@"Not in the If Loop");
-            //}
+            }
+            else{
+                NSLog(@"Not in the If Loop");
+            }
             
         }
     } else {
@@ -326,10 +345,10 @@
         if ([service.UUID isEqual:POLARH7_HRM_HEART_RATE_SERVICE_UUID]) {
             for (CBCharacteristic *characteristic in service.characteristics)
             {
-                //if ([characteristic.UUID isEqual:POLARH7_HRM_HEART_RATE_SERVICE_UUID]) {
+                if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) {
                     NSLog(@"HR Measurement characteritsic found");
                     [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
-                //}
+                }
            
             }
         }
