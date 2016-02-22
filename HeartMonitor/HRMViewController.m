@@ -223,12 +223,14 @@ CBUUID *HR_Measurement_Characteristic_UUID;
 		//[self getHeartBPMData:characteristic error:error];
         // Get the Heart Rate Monitor BPM
         NSData *data = [characteristic value];      // 1
+        
         const uint8_t *reportData = [data bytes];
         uint16_t bpm = 0;
         
         if ((reportData[0] & 0x01) == 0) {          // 2
             // Retrieve the BPM value for the Heart Rate Monitor
             bpm = reportData[1];
+            NSLog(@"BPM Value: %i",bpm);
         }
         else {
             bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
