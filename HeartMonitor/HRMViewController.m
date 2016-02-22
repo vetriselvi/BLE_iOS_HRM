@@ -8,6 +8,7 @@
 
 #import "HRMViewController.h"
 #import "Constants.h"
+#import "Math.h"
 
 @interface HRMViewController () {
 CBUUID *HR_Measurement_Characteristic_UUID;
@@ -226,15 +227,27 @@ CBUUID *HR_Measurement_Characteristic_UUID;
         
         const uint8_t *reportData = [data bytes];
         uint16_t bpm = 0;
+        uint16_t bpmOld ;
         
         if ((reportData[0] & 0x01) == 0) {          // 2
             // Retrieve the BPM value for the Heart Rate Monitor
+            bpmOld = bpm;
             bpm = reportData[1];
-            NSLog(@"BPM Value: %i",bpm);
+           
+
+           
+            
+            //NSLog(@"BPM Value: %i",bpm);
         }
+        
+        
         else {
             bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
         }
+        NSLog(@"Difference between two consecutive bpms is: %i",abs(bpmOld-bpm));
+        
+        
+        
         // Display the heart rate value to the UI if no error occurred
         if( (characteristic.value)  || !error ) {   // 4
             self.heartRate = bpm;
