@@ -12,6 +12,7 @@
 
 @interface HRMViewController () {
 CBUUID *HR_Measurement_Characteristic_UUID;
+uint16_t bpmOld ;
 }
 @property (strong, nonatomic) CBPeripheral          *discoveredPeripheral;
 
@@ -19,7 +20,10 @@ CBUUID *HR_Measurement_Characteristic_UUID;
 
 @implementation HRMViewController
 @synthesize bluetoothManager;
-
+int flag =0;
+uint16_t bpm = 0;
+uint16_t bpm2 = 0;
+//bpmOld = 0;
 //static NSString * const hrsServiceUUIDString = @"0000180D-0000-1000-8000-00805F9B34FB";
 ////static NSString * const POLARH7_HRM_NOTIFICATIONS_SERVICE_UUID = @"00002A37-0000-1000-8000-00805F9B34FB";
 //static NSString * const hrsSensorLocationCharacteristicUUIDString = @"00002A38-0000-1000-8000-00805F9B34FB";
@@ -224,29 +228,74 @@ CBUUID *HR_Measurement_Characteristic_UUID;
 		//[self getHeartBPMData:characteristic error:error];
         // Get the Heart Rate Monitor BPM
         NSData *data = [characteristic value];      // 1
+        NSUInteger dataLength = data.length;
+//        NSDictionary *connectionInterval = [characteristic.properties];
+        //NSLog(@"DataLength of the characteristic %lu",(unsigned long)dataLength);
         
         const uint8_t *reportData = [data bytes];
-        uint16_t bpm = 0;
-        uint16_t bpmOld ;
+      //  int reportDataNew = [data bytes];
+//        uint16_t bpm = 0;
+//        uint16_t bpm2 = 0;
+//        int bpm = 0;
+//        uint16_t bpm2 = 0;
+        //uint16_t bpmOld ;
         
+        
+        if(flag==0){
         if ((reportData[0] & 0x01) == 0) {          // 2
             // Retrieve the BPM value for the Heart Rate Monitor
-            bpmOld = bpm;
+            //bpmOld = bpm;
             bpm = reportData[1];
            
 
            
             
-            //NSLog(@"BPM Value: %i",bpm);
+            NSLog(@"BPM :  ---  %i --- ",bpm);
         }
         
         
         else {
-            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
+            //bpmOld = bpm;
+            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3 (
+            NSLog(@"BPM :  ---  %i --- ",bpm);
+
         }
-        NSLog(@"Difference between two consecutive bpms is: %i",abs(bpmOld-bpm));
+            flag++;
+        }
+    
+        
+        else if(flag==1){
+            if ((reportData[0] & 0x01) == 0) {          // 2
+                // Retrieve the BPM value for the Heart Rate Monitor
+                //bpmOld = bpm;
+                bpm2 = reportData[1];
+                
+                
+                
+                
+                NSLog(@"BPM2 :  ---  %i --- ",bpm2);
+            }
+            
+            
+            else {
+                //bpmOld = bpm;
+                bpm2 = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3 (*(uint16_t *)
+                NSLog(@"BPM2 :  ---  %i --- ",bpm2);
+
+            }
+            flag=0;
+        }
         
         
+        if (abs((bpm)-abs(bpm2)) != 1) {
+            NSLog(@"Skips data!!!!!!!!!!!!!!" );
+        }
+        
+        
+        //uint16_t diff = bpmOld -bpm;
+       // NSLog(@"Difference between two consecutive bpms is: %i",abs(bpmOld-bpm));
+        
+        //[self differenceBPM:bpm];
         
         // Display the heart rate value to the UI if no error occurred
         if( (characteristic.value)  || !error ) {   // 4
@@ -262,6 +311,8 @@ CBUUID *HR_Measurement_Characteristic_UUID;
 	// Add our constructed device information to our UITextView
 	self.deviceInfo.text = [NSString stringWithFormat:@"%@\n%@\n%@\n", self.connected, self.bodyData, self.manufacturer];  // 4
 }
+
+
 
 // Instance method to get the heart rate BPM information
 - (void) getHeartBPMData:(CBCharacteristic *)characteristic error:(NSError *)error
@@ -385,17 +436,112 @@ CBUUID *HR_Measurement_Characteristic_UUID;
             {
                 if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) {
                     NSLog(@"HR Measurement characteritsic found");
+//                    NSData *data = [characteristic value];      // 1
+//                    const uint8_t *reportData = [data bytes];
+//                    uint8_t bpm = 0;
+//                    uint8_t bpm2 = 0;
+
+                  //  int flag =0;
                     [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
-                }
+
+//                    if(flag==0){
+//                        [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
+//                        if ((reportData[0] & 0x01) == 0) {          // 2
+//                            // Retrieve the BPM value for the Heart Rate Monitor
+//                            //bpmOld = bpm;
+//                            bpm = reportData[1];
+//                            
+//                            
+//                            
+//                            
+//                            NSLog(@"BPM :  ---  %i --- ",bpm);
+//                        }
+//                        
+//                        
+//                        else {
+//                            //bpmOld = bpm;
+//                            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
+//                            
+//                        }
+//
+//                    }
+//                    flag++;
+//                    if(flag==1){
+//                        [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
+//
+//                        if ((reportData[0] & 0x01) == 0) {          // 2
+//                            // Retrieve the BPM value for the Heart Rate Monitor
+//                            //bpmOld = bpm;
+//                            bpm2 = reportData[1];
+//                            
+//                            
+//                            
+//                            
+//                            NSLog(@"BPM2 :  ---  %i --- ",bpm2);
+//                        }
+//                        
+//                        
+//                        else {
+//                            //bpmOld = bpm;
+//                            bpm2 = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
+//                            
+//                        }
+//                        
+//                    }
+//                    flag=0;
+
+                    
+                    
+//                    if (flag==0) {
+//                    if ((reportData[0] & 0x01) == 0) {          // 2
+//                         //Retrieve the BPM value for the Heart Rate Monitor
+//                        bpm = data;
+//                        NSLog(@"the old bpm value is %hhu",bpm);
+//                        
+//                    }
+//                    else {
+//                        bpmOld = bpm;
+//                        bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
+//                        
+//                    }
+//                    
+//                    flag++;
+//                    [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
+//                    }
+//                    if(flag==1) {
+//                        //if ((reportData[0] & 0x01) == 0) {          // 2
+//                            // Retrieve the BPM value for the Heart Rate Monitor
+//                            bpm = reportData;
+//                            NSLog(@"the new bpm value is %hhu",bpm);
+//                            
+//                        //}
+////                        else {
+////                            //bpmOld = bpm;
+////                            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
+////                            
+////                    }
+//                        
+//                    //[peripheral setNotifyValue:YES forCharacteristic:characteristic ];
+//                    
+//                    }
+                    
            
             }
         }
 
-    } else {
+            
+        }
+
+else {
         NSLog(@"Error occurred while discovering characteristic: %@",[error localizedDescription]);
     }
 }
-
+}
+//
+//- (void) peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+//    
+//    
+//}
 
 
 @end
