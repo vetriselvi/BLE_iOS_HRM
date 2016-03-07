@@ -95,7 +95,19 @@ uint16_t bpm2 = 0;
 	else if ([central state] == CBCentralManagerStateUnsupported) {
 		NSLog(@"CoreBluetooth BLE hardware is unsupported on this platform");
 	}
+    
    //[self scan];
+}
+
+- (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    
+    if ([peripheral state] == CBPeripheralStateDisconnected) {
+        NSLog(@"Peripheral is disconnected");
+    }
 }
 //- (void)centralManagerDidUpdateState:(CBCentralManager *)central
 //{
@@ -216,6 +228,11 @@ uint16_t bpm2 = 0;
     [peripheral discoverServices:@[[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]]];
 }
 
+- (void)cent
+{
+    
+}
+
 
 
 
@@ -230,7 +247,8 @@ uint16_t bpm2 = 0;
         NSData *data = [characteristic value];      // 1
         NSUInteger dataLength = data.length;
 //        NSDictionary *connectionInterval = [characteristic.properties];
-        //NSLog(@"DataLength of the characteristic %lu",(unsigned long)dataLength);
+        NSLog(@"DataName of the charateristic %@",data);
+        NSLog(@"DataLength of the characteristic %lu",(unsigned long)dataLength);
         
         const uint8_t *reportData = [data bytes];
       //  int reportDataNew = [data bytes];
@@ -242,6 +260,7 @@ uint16_t bpm2 = 0;
         
         
         if(flag==0){
+            NSLog(@"reportData[0] %hhu",reportData[0]);
         if ((reportData[0] & 0x01) == 0) {          // 2
             // Retrieve the BPM value for the Heart Rate Monitor
             //bpmOld = bpm;
@@ -290,6 +309,7 @@ uint16_t bpm2 = 0;
         if (abs((bpm)-abs(bpm2)) != 1) {
             NSLog(@"Skips data!!!!!!!!!!!!!!" );
         }
+        
         
         
         //uint16_t diff = bpmOld -bpm;
@@ -403,6 +423,11 @@ uint16_t bpm2 = 0;
 }
 
 #
+
+-(void) onConnectionStateChanged {
+    NSLog(@"Connection State changed!!!!!!!!");
+}
+
 
 -(void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
