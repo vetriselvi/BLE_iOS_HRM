@@ -259,57 +259,85 @@ uint16_t bpm2 = 0;
         //uint16_t bpmOld ;
         
         
-        if(flag==0){
-            NSLog(@"reportData[0] %hhu",reportData[0]);
-        if ((reportData[0] & 0x01) == 0) {          // 2
+            NSLog(@"reportData[0] %hhu", reportData[0]);
+            NSLog(@"reportData[1] %hhu", reportData[1]);
+            NSLog(@"reportData[2] %hhu", reportData[2]);
+            NSLog(@"reportData[3] %hhu", reportData[3]);
+            NSLog(@"reportData[4] %hhu", reportData[4]);
+            NSLog(@"reportData[5] %hhu", reportData[5]);
+            NSLog(@"reportData[6] %hhu", reportData[6]);
+            NSLog(@"reportData[7] %hhu", reportData[7]);
+            NSLog(@"reportData[8] %hhu", reportData[8]);
+            NSLog(@"reportData[9] %hhu", reportData[9]);
+            NSLog(@"reportData[10] %hhu", reportData[10]);
+            NSLog(@"reportData[11] %hhu", reportData[11]);
+            NSLog(@"reportData[12] %hhu", reportData[12]);
+            NSLog(@"reportData[13] %hhu", reportData[13]);
+            NSLog(@"reportData[14] %hhu", reportData[14]);
+            NSLog(@"reportData[15] %hhu", reportData[15]);
+            NSLog(@"reportData[16] %hhu", reportData[16]);
+            NSLog(@"reportData[17] %hhu", reportData[17]);
+            NSLog(@"reportData[18] %hhu", reportData[18]);
+            //NSLog(@"reportData[19] %hhu", reportData[19]);
+          if(flag==0){
+
+
+        //if ((reportData[0] & 0x01) == 0) {          // 2
             // Retrieve the BPM value for the Heart Rate Monitor
             //bpmOld = bpm;
-            bpm = reportData[1];
+            bpm = reportData[19];
            
+            NSLog(@"reportData[19] %hu", bpm);
 
            
             
-            NSLog(@"BPM :  ---  %i --- ",bpm);
-        }
+            //NSLog(@"BPM :  ---  %i --- ",bpm);
+        //}
         
         
-        else {
-            //bpmOld = bpm;
-            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3 (
-            NSLog(@"BPM :  ---  %i --- ",bpm);
-
-        }
+//        else {
+//            //bpmOld = bpm;
+//            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[19]));  // 3 (
+//            //NSLog(@"BPM :  ---  %i --- ",bpm);
+//            NSLog(@"reportData[19] %hu", bpm);
+//
+//
+//        }
             flag++;
         }
     
         
         else if(flag==1){
-            if ((reportData[0] & 0x01) == 0) {          // 2
+           // if ((reportData[0] & 0x01) == 0) {          // 2
                 // Retrieve the BPM value for the Heart Rate Monitor
                 //bpmOld = bpm;
-                bpm2 = reportData[1];
+                bpm2 = reportData[19];
                 
                 
                 
                 
-                NSLog(@"BPM2 :  ---  %i --- ",bpm2);
-            }
-            
-            
-            else {
-                //bpmOld = bpm;
-                bpm2 = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3 (*(uint16_t *)
-                NSLog(@"BPM2 :  ---  %i --- ",bpm2);
+               // NSLog(@"BPM2 :  ---  %i --- ",bpm2);
+                NSLog(@"reportData[19] %hu", bpm2);
 
-            }
+//            }
+            
+//            
+//            else {
+//                //bpmOld = bpm;
+//                bpm2 = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3 (*(uint16_t *)
+//               // NSLog(@"BPM2 :  ---  %i --- ",bpm2);
+//                NSLog(@"reportData[19] %hu", bpm2);
+//
+//
+//            }
             flag=0;
         }
         
         
-        if (abs((bpm)-abs(bpm2)) != 1) {
+        if (abs((bpm)-abs(bpm2)) != 1 ) {
             NSLog(@"Skips data!!!!!!!!!!!!!!" );
         }
-        
+    
         
         
         //uint16_t diff = bpmOld -bpm;
@@ -353,6 +381,7 @@ uint16_t bpm2 = 0;
 	if( (characteristic.value)  || !error ) {   // 4
 		self.heartRate = bpm;
 		self.heartRateBPM.text = [NSString stringWithFormat:@"%i bpm", bpm];
+        NSLog(@"BPM is %hu", bpm);
 		self.heartRateBPM.font = [UIFont fontWithName:@"Futura-CondensedMedium" size:28];
 		[self doHeartBeat];
 		self.pulseTimer = [NSTimer scheduledTimerWithTimeInterval:(60. / self.heartRate) target:self selector:@selector(doHeartBeat) userInfo:nil repeats:NO];
@@ -548,7 +577,7 @@ uint16_t bpm2 = 0;
 //                        
 //                    //[peripheral setNotifyValue:YES forCharacteristic:characteristic ];
 //                    
-//                    }
+                    }
                     
            
             }
@@ -561,7 +590,7 @@ else {
         NSLog(@"Error occurred while discovering characteristic: %@",[error localizedDescription]);
     }
 }
-}
+//}
 //
 //- (void) peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
 //    
