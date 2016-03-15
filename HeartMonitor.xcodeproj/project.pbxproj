@@ -124,9 +124,9 @@
 			children = (
 				D17E90861C7A79B000837171 /* Constants.h */,
 				E98E8E661815331A00614D8E /* HRMAppDelegate.h */,
-				E98E8E671815331A00614D8E /* HRMAppDelegate.m */,
 				E98E8E691815331A00614D8E /* Main.storyboard */,
 				E98E8E6C1815331A00614D8E /* HRMViewController.h */,
+				E98E8E671815331A00614D8E /* HRMAppDelegate.m */,
 				E98E8E6D1815331A00614D8E /* HRMViewController.m */,
 				E98E8E5E1815331A00614D8E /* Supporting Files */,
 			);

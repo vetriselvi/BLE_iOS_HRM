@@ -74,6 +74,20 @@ uint16_t bpm2 = 0;
 	self.centralManager = centralManager;
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+//    [self scan]; //change
+    
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+//    [self.centralManager stopScan]; //change
+    
+}
+
 // method called whenever the device state changes.
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central
 {
@@ -84,7 +98,7 @@ uint16_t bpm2 = 0;
 	else if ([central state] == CBCentralManagerStatePoweredOn) {
 		NSLog(@"CoreBluetooth BLE hardware is powered on and ready");
         //[central scanForPeripheralsWithServices:POLARH7_HRM_HEART_RATE_SERVICE_UUID options:nil];
-        [self scan];
+        [self scan]; //change
 	}
 	else if ([central state] == CBCentralManagerStateUnauthorized) {
 		NSLog(@"CoreBluetooth BLE state is unauthorized");
@@ -109,25 +123,14 @@ uint16_t bpm2 = 0;
         NSLog(@"Peripheral is disconnected");
     }
 }
-//- (void)centralManagerDidUpdateState:(CBCentralManager *)central
-//{
-//    if (central.state != CBCentralManagerStatePoweredOn) {
-//        // In a real app, you'd deal with all the states correctly
-//        return;
-//    }
-//    
-//    // The state must be CBCentralManagerStatePoweredOn...
-//    
-//    // ... so start scanning
-//    [self scan];
-//    
-//}
+
 
 
 /** Scan for peripherals - specifically for our service's 128bit CBUUID
  */
 - (void)scan
 {
+    
     [self.centralManager scanForPeripheralsWithServices:@[[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]]
                                                 options:@{ CBCentralManagerScanOptionAllowDuplicatesKey : @YES }];
     
@@ -137,29 +140,17 @@ uint16_t bpm2 = 0;
 }
 
 
-// method called whenever we have successfully connected to the BLE peripheral
-//- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
-//{
-//	[peripheral setDelegate:self];
-//    [peripheral discoverServices:nil];
-//	self.connected = [NSString stringWithFormat:@"Connected: %@", peripheral.state == CBPeripheralStateConnected ? @"YES" : @"NO"];
-//}
 
-// CBPeripheralDelegate - Invoked when you discover the peripheral's available services.
-//- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
-//{
-//	for (CBService *service in peripheral.services) {
-//		[peripheral discoverCharacteristics:nil forService:service];
-//	}
-//}
 
 // CBCentralManagerDelegate - This is called with the CBPeripheral class as its main input parameter. This contains most of the information there is to know about a BLE peripheral.
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
 {
 	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
+    NSLog(@"The local name is %@",localName);
+    
 	//if (![localName isEqual:@""]) {
 		// We found the Heart Rate Monitor
-		[self.centralManager stopScan];
+		[self.centralManager stopScan]; //change
         NSLog(@"Stopped scan");
 		self.polarH7HRMPeripheral = peripheral;
 		peripheral.delegate = self;
@@ -355,6 +346,7 @@ uint16_t bpm2 = 0;
         }
         return;
 	}
+//    if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) { // 2
 	
 	// Add our constructed device information to our UITextView
 	self.deviceInfo.text = [NSString stringWithFormat:@"%@\n%@\n%@\n", self.connected, self.bodyData, self.manufacturer];  // 4
