@@ -43,6 +43,7 @@ static NSString * const rscMeasurementCharacteristicUUIDString = @"00002A53-0000
 static NSString * const hrsServiceUUIDString = @"0000180D-0000-1000-8000-00805F9B34FB";
 static NSString * const hrsHeartRateCharacteristicUUIDString = @"00002A37-0000-1000-8000-00805F9B34FB";
 static NSString * const hrsSensorLocationCharacteristicUUIDString = @"00002A38-0000-1000-8000-00805F9B34FB";
+static NSString * const hrsSensorDeviceNameUUIDString = @"00002A00-0000-1000-8000-00805f9b34fb";
 
 static NSString * const htsServiceUUIDString = @"00001809-0000-1000-8000-00805F9B34FB";
 static NSString * const htsMeasurementCharacteristicUUIDString = @"00002A1C-0000-1000-8000-00805F9B34FB";

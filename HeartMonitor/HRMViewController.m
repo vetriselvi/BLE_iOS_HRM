@@ -13,6 +13,7 @@
 @interface HRMViewController () {
 CBUUID *HR_Measurement_Characteristic_UUID;
 uint16_t bpmOld ;
+    CBUUID *HR_DeviceName_Characteristic_UUID;
 }
 @property (strong, nonatomic) CBPeripheral          *discoveredPeripheral;
 
@@ -37,6 +38,7 @@ uint16_t bpm2 = 0;
 //        HR_Service_UUID = [CBUUID UUIDWithString:hrsServiceUUIDString];
 //        NSLog(@"HR_Service_UUID is Vetri: check 2: %@",HR_Service_UUID);
         HR_Measurement_Characteristic_UUID = [CBUUID UUIDWithString:hrsHeartRateCharacteristicUUIDString];
+        HR_DeviceName_Characteristic_UUID = [CBUUID UUIDWithString:hrsSensorDeviceNameUUIDString];
         //HR_Location_Characteristic_UUID = [CBUUID UUIDWithString:hrsSensorLocationCharacteristicUUIDString];
         //Battery_Service_UUID = [CBUUID UUIDWithString:batteryServiceUUIDString];
         //Battery_Level_Characteristic_UUID = [CBUUID UUIDWithString:batteryLevelCharacteristicUUIDString];
@@ -133,6 +135,7 @@ uint16_t bpm2 = 0;
     
     [self.centralManager scanForPeripheralsWithServices:@[[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]]
                                                 options:@{ CBCentralManagerScanOptionAllowDuplicatesKey : @YES }];
+   
     
     NSLog(@"Scanning started");
     //[self.centralManager didDiscoverPeripheral];
@@ -148,14 +151,41 @@ uint16_t bpm2 = 0;
 	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
     NSLog(@"The local name is %@",localName);
     
-	//if (![localName isEqual:@""]) {
+	if (![localName isEqual:@""]) {
+        [self scan];
+        if ([localName isEqual:@"VayuHRM_And"])
+        {
 		// We found the Heart Rate Monitor
 		[self.centralManager stopScan]; //change
         NSLog(@"Stopped scan");
 		self.polarH7HRMPeripheral = peripheral;
 		peripheral.delegate = self;
 		[self.centralManager connectPeripheral:peripheral options:nil];
-	//}
+        }
+        [self scan];
+        if ([localName isEqual:@"VayuHRM_IoS"])
+        {
+            // We found the Heart Rate Monitor
+            [self.centralManager stopScan]; //change
+            NSLog(@"Stopped scan");
+            self.polarH7HRMPeripheral = peripheral;
+            peripheral.delegate = self;
+            [self.centralManager connectPeripheral:peripheral options:nil];
+        }
+        [self scan];
+        if ([localName isEqual:@"VayuHRM_Win"])
+        {
+            // We found the Heart Rate Monitor
+            [self.centralManager stopScan]; //change
+            NSLog(@"Stopped scan");
+            self.polarH7HRMPeripheral = peripheral;
+            peripheral.delegate = self;
+            [self.centralManager connectPeripheral:peripheral options:nil];
+        }
+	}
+    
+    
+    
 }
 
 
@@ -219,10 +249,7 @@ uint16_t bpm2 = 0;
     [peripheral discoverServices:@[[CBUUID UUIDWithString:POLARH7_HRM_HEART_RATE_SERVICE_UUID]]];
 }
 
-- (void)cent
-{
-    
-}
+
 
 
 
@@ -231,10 +258,13 @@ uint16_t bpm2 = 0;
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
 	// Updated value for heart rate measurement received
-	if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) { // 1
+    [self scan];
+	if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID] && [peripheral.name isEqual:@"VayuHRM_And"]) { // D1–2 device
 		// Get the Heart Rate Monitor BPM
 		//[self getHeartBPMData:characteristic error:error];
         // Get the Heart Rate Monitor BPM
+        [characteristic.UUID isEqual:HR_DeviceName_Characteristic_UUID];
+        NSLog(@"Device name %@",HR_DeviceName_Characteristic_UUID);
         NSData *data = [characteristic value];      // 1
         NSUInteger dataLength = data.length;
 //        NSDictionary *connectionInterval = [characteristic.properties];
@@ -346,8 +376,14 @@ uint16_t bpm2 = 0;
         }
         return;
 	}
-//    if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) { // 2
-	
+    [self scan];
+    if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID] && [peripheral.name isEqual:@"VayuHRM_IoS"]) { // 2
+        NSLog(@"iOSSSSSSSSSSS");
+    }
+    [self scan];
+    if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID] && [peripheral.name isEqual:@"VayuHRM_Win"]) { // 3
+         NSLog(@"Winnnnnnnnnnnnnnn");
+    }
 	// Add our constructed device information to our UITextView
 	self.deviceInfo.text = [NSString stringWithFormat:@"%@\n%@\n%@\n", self.connected, self.bodyData, self.manufacturer];  // 4
 }
@@ -482,93 +518,9 @@ uint16_t bpm2 = 0;
             {
                 if ([characteristic.UUID isEqual:HR_Measurement_Characteristic_UUID]) {
                     NSLog(@"HR Measurement characteritsic found");
-//                    NSData *data = [characteristic value];      // 1
-//                    const uint8_t *reportData = [data bytes];
-//                    uint8_t bpm = 0;
-//                    uint8_t bpm2 = 0;
 
-                  //  int flag =0;
                     [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
 
-//                    if(flag==0){
-//                        [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
-//                        if ((reportData[0] & 0x01) == 0) {          // 2
-//                            // Retrieve the BPM value for the Heart Rate Monitor
-//                            //bpmOld = bpm;
-//                            bpm = reportData[1];
-//                            
-//                            
-//                            
-//                            
-//                            NSLog(@"BPM :  ---  %i --- ",bpm);
-//                        }
-//                        
-//                        
-//                        else {
-//                            //bpmOld = bpm;
-//                            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
-//                            
-//                        }
-//
-//                    }
-//                    flag++;
-//                    if(flag==1){
-//                        [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
-//
-//                        if ((reportData[0] & 0x01) == 0) {          // 2
-//                            // Retrieve the BPM value for the Heart Rate Monitor
-//                            //bpmOld = bpm;
-//                            bpm2 = reportData[1];
-//                            
-//                            
-//                            
-//                            
-//                            NSLog(@"BPM2 :  ---  %i --- ",bpm2);
-//                        }
-//                        
-//                        
-//                        else {
-//                            //bpmOld = bpm;
-//                            bpm2 = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
-//                            
-//                        }
-//                        
-//                    }
-//                    flag=0;
-
-                    
-                    
-//                    if (flag==0) {
-//                    if ((reportData[0] & 0x01) == 0) {          // 2
-//                         //Retrieve the BPM value for the Heart Rate Monitor
-//                        bpm = data;
-//                        NSLog(@"the old bpm value is %hhu",bpm);
-//                        
-//                    }
-//                    else {
-//                        bpmOld = bpm;
-//                        bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
-//                        
-//                    }
-//                    
-//                    flag++;
-//                    [peripheral setNotifyValue:YES forCharacteristic:characteristic ];
-//                    }
-//                    if(flag==1) {
-//                        //if ((reportData[0] & 0x01) == 0) {          // 2
-//                            // Retrieve the BPM value for the Heart Rate Monitor
-//                            bpm = reportData;
-//                            NSLog(@"the new bpm value is %hhu",bpm);
-//                            
-//                        //}
-////                        else {
-////                            //bpmOld = bpm;
-////                            bpm = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[1]));  // 3
-////                            
-////                    }
-//                        
-//                    //[peripheral setNotifyValue:YES forCharacteristic:characteristic ];
-//                    
                     }
                     
            
@@ -588,6 +540,9 @@ else {
 //    
 //    
 //}
+
+
+
 
 
 @end
